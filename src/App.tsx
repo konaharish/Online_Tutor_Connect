@@ -9,7 +9,9 @@ import Index from "./pages/Index";
 import Search from "./pages/Search";
 import Dashboard from "./pages/Dashboard";
 import BecomeTutor from "./pages/BecomeTutor";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { AuthGuard } from "./components/AuthGuard";
 
 const queryClient = new QueryClient();
 
@@ -23,8 +25,23 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/search" element={<Search />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/become-tutor" element={<BecomeTutor />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <AuthGuard>
+                  <Dashboard />
+                </AuthGuard>
+              } 
+            />
+            <Route 
+              path="/become-tutor" 
+              element={
+                <AuthGuard>
+                  <BecomeTutor />
+                </AuthGuard>
+              } 
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>

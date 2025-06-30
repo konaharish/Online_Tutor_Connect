@@ -1,21 +1,25 @@
-
 import React, { useState } from 'react';
 import { Award, BookOpen, Clock, MapPin, Phone, Star, Users } from 'lucide-react';
+import { useTutorRegistration, TutorFormData } from '../hooks/useTutorRegistration';
+import { useNavigate } from 'react-router-dom';
 
 const BecomeTutor = () => {
-  const [formData, setFormData] = useState({
+  const { registerTutor, isSubmitting } = useTutorRegistration();
+  const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState<TutorFormData>({
     name: '',
     email: '',
     phone: '',
     qualifications: '',
-    subjects: [] as string[],
+    subjects: [],
     experience: '',
     address: '',
     city: '',
     state: '',
     teachingMode: 'both',
-    availability: [] as string[],
-    timeSlots: [] as string[],
+    availability: [],
+    timeSlots: [],
     fees: {
       grade1to4: 1000,
       grade5to9: 2000,
@@ -64,10 +68,31 @@ const BecomeTutor = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Tutor registration:', formData);
-    // TODO: Handle form submission
+    
+    // Validation
+    if (formData.subjects.length === 0) {
+      alert('Please select at least one subject you teach.');
+      return;
+    }
+    
+    if (formData.availability.length === 0) {
+      alert('Please select at least one available day.');
+      return;
+    }
+    
+    if (formData.timeSlots.length === 0) {
+      alert('Please select at least one time slot.');
+      return;
+    }
+
+    const result = await registerTutor(formData);
+    
+    if (result.success) {
+      // Redirect to dashboard after successful registration
+      navigate('/dashboard');
+    }
   };
 
   return (
@@ -166,7 +191,7 @@ const BecomeTutor = () => {
                 <textarea
                   required
                   rows={3}
-                  placeholder="e.g., M.Sc Mathematics, B.Ed, PhD Physics"
+                  placeholder="e.g., M.Sc Mathematics, B.Ed, PhD Physics (separate with commas)"
                   value={formData.qualifications}
                   onChange={(e) => setFormData(prev => ({ ...prev, qualifications: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -389,9 +414,10 @@ const BecomeTutor = () => {
             <div className="pt-6 border-t border-gray-200">
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl text-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl text-lg font-semibold hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
               >
-                Register as Tutor
+                {isSubmitting ? 'Registering...' : 'Register as Tutor'}
               </button>
               <p className="text-sm text-gray-500 text-center mt-4">
                 By registering, you agree to our Terms of Service and Privacy Policy
