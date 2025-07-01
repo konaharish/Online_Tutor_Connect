@@ -70,6 +70,20 @@ export type Database = {
             referencedRelation: "tutors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_bookings_student_id"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_bookings_tutor_id"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "tutors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       favorites: {
@@ -101,6 +115,20 @@ export type Database = {
           },
           {
             foreignKeyName: "favorites_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "tutors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_favorites_student_id"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_favorites_tutor_id"
             columns: ["tutor_id"]
             isOneToOne: false
             referencedRelation: "tutors"
@@ -143,6 +171,27 @@ export type Database = {
           tutor_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_reviews_booking_id"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_reviews_student_id"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_reviews_tutor_id"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "tutors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reviews_booking_id_fkey"
             columns: ["booking_id"]

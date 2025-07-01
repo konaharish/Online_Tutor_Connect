@@ -3,34 +3,35 @@ import React, { useState, useMemo, useEffect } from 'react';
 import SearchFilters from '../components/SearchFilters';
 import TeacherCard from '../components/TeacherCard';
 import { SearchFilters as SearchFiltersType, Teacher } from '../types';
-import { mockTeachers } from '../data/mockData';
 import { getAIRecommendations } from '../utils/aiRecommendations';
-import { Brain, Filter } from 'lucide-react';
+import { useTutors } from '../hooks/useTutors';
+import { Brain, Filter, Loader } from 'lucide-react';
 
 const Search = () => {
   const [filters, setFilters] = useState<SearchFiltersType>({});
   const [searchTriggered, setSearchTriggered] = useState(false);
   const [showAIRecommendations, setShowAIRecommendations] = useState(false);
+  const { tutors, loading, error } = useTutors();
 
-  // Show 4 default tutors when the page loads
+  // Show tutors when the page loads
   useEffect(() => {
     setSearchTriggered(true);
   }, []);
 
   const filteredTeachers = useMemo(() => {
     console.log('Filtering teachers with filters:', filters);
-    console.log('Available teachers:', mockTeachers);
+    console.log('Available teachers:', tutors.length);
     
-    if (!searchTriggered) return [];
+    if (!searchTriggered || loading) return [];
 
-    // If no filters are applied, show first 4 tutors as default
+    // If no filters are applied, show first 8 tutors as default
     if (!filters.subjects && !filters.subject && !filters.location && !filters.maxBudget && 
         !filters.teachingMode && !filters.rating && !filters.grade) {
       console.log('No filters applied, showing default tutors');
-      return mockTeachers.slice(0, 4);
+      return tutors.slice(0, 8);
     }
 
-    return mockTeachers.filter(teacher => {
+    return tutors.filter(teacher => {
       console.log('Checking teacher:', teacher.name, 'with subjects:', teacher.subjects);
       
       // Check multiple subjects (new feature)
@@ -77,10 +78,10 @@ const Search = () => {
       console.log('Teacher passed all filters:', teacher.name);
       return true;
     });
-  }, [filters, searchTriggered]);
+  }, [filters, searchTriggered, tutors, loading]);
 
   const aiRecommendations = useMemo(() => {
-    if (!showAIRecommendations || !searchTriggered) return [];
+    if (!showAIRecommendations || !searchTriggered || loading) return [];
     
     const studentProfile = {
       subjects: filters.subjects || (filters.subject ? [filters.subject] : undefined),
@@ -96,7 +97,7 @@ const Search = () => {
     };
     
     return getAIRecommendations(filteredTeachers, studentProfile, filters);
-  }, [filteredTeachers, filters, showAIRecommendations, searchTriggered]);
+  }, [filteredTeachers, filters, showAIRecommendations, searchTriggered, loading]);
 
   const getGradeGroup = (grade?: string): keyof Teacher['fees'] => {
     if (!grade) return 'grade5to9';
@@ -134,6 +135,22 @@ const Search = () => {
 
   console.log('Final display teachers:', displayTeachers.length);
 
+  if (error) {
+    return (
+      <div className="min-h-screen py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <div className="text-red-500 mb-4">
+              <Filter className="w-16 h-16 mx-auto mb-2" />
+              <h3 className="text-xl font-semibold">Error Loading Tutors</h3>
+              <p className="text-gray-600 mt-2">{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -148,19 +165,28 @@ const Search = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {displayTeachers.length} Tutors Found
+                  {loading ? (
+                    <div className="flex items-center space-x-2">
+                      <Loader className="w-6 h-6 animate-spin" />
+                      <span>Loading Tutors...</span>
+                    </div>
+                  ) : (
+                    `${displayTeachers.length} Tutors Found`
+                  )}
                 </h2>
-                <button
-                  onClick={() => setShowAIRecommendations(!showAIRecommendations)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                    showAIRecommendations
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <Brain className="w-4 h-4" />
-                  <span>AI Recommendations</span>
-                </button>
+                {!loading && (
+                  <button
+                    onClick={() => setShowAIRecommendations(!showAIRecommendations)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                      showAIRecommendations
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Brain className="w-4 h-4" />
+                    <span>AI Recommendations</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -176,20 +202,26 @@ const Search = () => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {displayTeachers.map((teacher, index) => (
-                <TeacherCard
-                  key={teacher.id}
-                  teacher={teacher}
-                  distance={displayDistances[index]}
-                  onViewProfile={handleViewProfile}
-                  onBookSession={handleBookSession}
-                  grade={filters.grade}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader className="w-8 h-8 animate-spin text-indigo-600" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {displayTeachers.map((teacher, index) => (
+                  <TeacherCard
+                    key={teacher.id}
+                    teacher={teacher}
+                    distance={displayDistances[index]}
+                    onViewProfile={handleViewProfile}
+                    onBookSession={handleBookSession}
+                    grade={filters.grade}
+                  />
+                ))}
+              </div>
+            )}
 
-            {displayTeachers.length === 0 && (
+            {!loading && displayTeachers.length === 0 && (
               <div className="text-center py-12">
                 <Filter className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No tutors found</h3>
