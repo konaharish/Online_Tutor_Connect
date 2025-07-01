@@ -29,6 +29,7 @@ const Auth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth event:', event, 'Session:', session);
         if (session?.user) {
           setUser(session.user);
           navigate('/');
@@ -51,11 +52,27 @@ const Auth = () => {
     });
 
     if (error) {
-      toast({
-        title: "Login Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error('Login error:', error);
+      
+      if (error.message.includes('Email not confirmed')) {
+        toast({
+          title: "Email Not Confirmed",
+          description: "Please check your email and click the confirmation link before signing in. If you can't find the email, try signing up again.",
+          variant: "destructive",
+        });
+      } else if (error.message.includes('Invalid login credentials')) {
+        toast({
+          title: "Invalid Credentials",
+          description: "Please check your email and password and try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } else {
       toast({
         title: "Welcome back!",
@@ -82,7 +99,7 @@ const Auth = () => {
 
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -91,16 +108,31 @@ const Auth = () => {
     });
 
     if (error) {
-      toast({
-        title: "Signup Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error('Signup error:', error);
+      if (error.message.includes('User already registered')) {
+        toast({
+          title: "Account Already Exists",
+          description: "An account with this email already exists. Please sign in instead.",
+          variant: "destructive",
+        });
+        setIsLogin(true);
+      } else {
+        toast({
+          title: "Signup Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } else {
+      console.log('Signup successful:', data);
       toast({
         title: "Account Created!",
-        description: "Please check your email to verify your account.",
+        description: "Please check your email to verify your account before signing in.",
       });
+      // Switch to login mode after successful signup
+      setIsLogin(true);
+      setPassword('');
+      setConfirmPassword('');
     }
 
     setLoading(false);
@@ -197,6 +229,14 @@ const Auth = () => {
             >
               {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
             </button>
+          </div>
+
+          {/* Email confirmation notice */}
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-700">
+              <strong>Note:</strong> After signing up, you must verify your email before you can sign in. 
+              Check your inbox and click the confirmation link.
+            </p>
           </div>
         </div>
       </div>

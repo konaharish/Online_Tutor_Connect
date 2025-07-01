@@ -71,6 +71,7 @@ export interface Review {
 
 export interface SearchFilters {
   subject?: string;
+  subjects?: string[];
   grade?: string;
   location?: string;
   maxBudget?: number;

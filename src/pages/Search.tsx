@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import SearchFilters from '../components/SearchFilters';
 import TeacherCard from '../components/TeacherCard';
 import { SearchFilters as SearchFiltersType, Teacher } from '../types';
@@ -12,15 +12,46 @@ const Search = () => {
   const [searchTriggered, setSearchTriggered] = useState(false);
   const [showAIRecommendations, setShowAIRecommendations] = useState(false);
 
+  // Show 4 default tutors when the page loads
+  useEffect(() => {
+    setSearchTriggered(true);
+  }, []);
+
   const filteredTeachers = useMemo(() => {
+    console.log('Filtering teachers with filters:', filters);
+    console.log('Available teachers:', mockTeachers);
+    
     if (!searchTriggered) return [];
 
+    // If no filters are applied, show first 4 tutors as default
+    if (!filters.subjects && !filters.subject && !filters.location && !filters.maxBudget && 
+        !filters.teachingMode && !filters.rating && !filters.grade) {
+      console.log('No filters applied, showing default tutors');
+      return mockTeachers.slice(0, 4);
+    }
+
     return mockTeachers.filter(teacher => {
+      console.log('Checking teacher:', teacher.name, 'with subjects:', teacher.subjects);
+      
+      // Check multiple subjects (new feature)
+      if (filters.subjects && filters.subjects.length > 0) {
+        const hasMatchingSubject = filters.subjects.some(subject => 
+          teacher.subjects.includes(subject)
+        );
+        console.log('Subject match check:', hasMatchingSubject, 'for subjects:', filters.subjects);
+        if (!hasMatchingSubject) {
+          return false;
+        }
+      }
+      
+      // Check single subject (backward compatibility)
       if (filters.subject && !teacher.subjects.includes(filters.subject)) {
+        console.log('Single subject filter failed for:', filters.subject);
         return false;
       }
       
       if (filters.location && !teacher.location.city.toLowerCase().includes(filters.location.toLowerCase())) {
+        console.log('Location filter failed for:', filters.location);
         return false;
       }
       
@@ -28,18 +59,22 @@ const Search = () => {
         const gradeGroup = getGradeGroup(filters.grade);
         const teacherFee = teacher.fees[gradeGroup];
         if (teacherFee > filters.maxBudget) {
+          console.log('Budget filter failed. Teacher fee:', teacherFee, 'Max budget:', filters.maxBudget);
           return false;
         }
       }
       
       if (filters.teachingMode && teacher.teachingMode !== 'both' && teacher.teachingMode !== filters.teachingMode) {
+        console.log('Teaching mode filter failed for:', filters.teachingMode);
         return false;
       }
       
       if (filters.rating && teacher.rating < filters.rating) {
+        console.log('Rating filter failed. Teacher rating:', teacher.rating, 'Min rating:', filters.rating);
         return false;
       }
       
+      console.log('Teacher passed all filters:', teacher.name);
       return true;
     });
   }, [filters, searchTriggered]);
@@ -48,7 +83,7 @@ const Search = () => {
     if (!showAIRecommendations || !searchTriggered) return [];
     
     const studentProfile = {
-      subjects: filters.subject ? [filters.subject] : undefined,
+      subjects: filters.subjects || (filters.subject ? [filters.subject] : undefined),
       grade: filters.grade,
       budget: filters.maxBudget ? { min: 0, max: filters.maxBudget } : undefined,
       preferredMode: filters.teachingMode,
@@ -79,6 +114,7 @@ const Search = () => {
   };
 
   const handleSearch = () => {
+    console.log('Search triggered with filters:', filters);
     setSearchTriggered(true);
     setShowAIRecommendations(false);
   };
@@ -95,6 +131,8 @@ const Search = () => {
 
   const displayTeachers = showAIRecommendations ? aiRecommendations.map(rec => rec.teacher) : filteredTeachers;
   const displayDistances = showAIRecommendations ? aiRecommendations.map(rec => rec.distance) : [];
+
+  console.log('Final display teachers:', displayTeachers.length);
 
   return (
     <div className="min-h-screen py-8">

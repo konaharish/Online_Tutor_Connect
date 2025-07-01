@@ -2,6 +2,7 @@
 import React from 'react';
 import { SearchFilters as SearchFiltersType } from '../types';
 import { subjects, grades, cities } from '../data/mockData';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface SearchFiltersProps {
   filters: SearchFiltersType;
@@ -14,24 +15,44 @@ const SearchFilters = ({ filters, onFiltersChange, onSearch }: SearchFiltersProp
     onFiltersChange({ ...filters, [key]: value });
   };
 
+  const handleSubjectChange = (subject: string, checked: boolean) => {
+    const currentSubjects = filters.subjects || [];
+    let newSubjects: string[];
+    
+    if (checked) {
+      newSubjects = [...currentSubjects, subject];
+    } else {
+      newSubjects = currentSubjects.filter(s => s !== subject);
+    }
+    
+    handleFilterChange('subjects', newSubjects.length > 0 ? newSubjects : undefined);
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Find Your Perfect Tutor</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Subject */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-          <select
-            value={filters.subject || ''}
-            onChange={(e) => handleFilterChange('subject', e.target.value || undefined)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="">All Subjects</option>
+        {/* Subjects - Multiple Selection */}
+        <div className="md:col-span-2 lg:col-span-3">
+          <label className="block text-sm font-medium text-gray-700 mb-3">Subjects (Select multiple)</label>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {subjects.map((subject) => (
-              <option key={subject} value={subject}>{subject}</option>
+              <div key={subject} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`subject-${subject}`}
+                  checked={filters.subjects?.includes(subject) || false}
+                  onCheckedChange={(checked) => handleSubjectChange(subject, checked as boolean)}
+                />
+                <label
+                  htmlFor={`subject-${subject}`}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  {subject}
+                </label>
+              </div>
             ))}
-          </select>
+          </div>
         </div>
 
         {/* Grade */}

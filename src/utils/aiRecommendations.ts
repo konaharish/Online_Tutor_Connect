@@ -23,7 +23,14 @@ export const getAIRecommendations = (
     // Base score from rating
     score += teacher.rating * 20;
     
-    // Subject match
+    // Subject match - handle both single and multiple selections
+    const searchSubjects = filters.subjects || (filters.subject ? [filters.subject] : []);
+    if (searchSubjects.length > 0 && teacher.subjects.some(s => searchSubjects.includes(s))) {
+      score += 30;
+      reasons.push('Teaches your required subjects');
+    }
+
+    // Also check student subjects if available
     if (student.subjects && teacher.subjects.some(s => student.subjects!.includes(s))) {
       score += 30;
       reasons.push('Teaches your required subjects');
