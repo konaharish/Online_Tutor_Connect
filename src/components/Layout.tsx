@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, BookOpen, Star, User, MapPin } from 'lucide-react';
+import { Home, Users, BookOpen, Star, User, MapPin, Calendar } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -43,6 +43,15 @@ const Layout = ({ children }: LayoutProps) => {
               >
                 <Users className="h-4 w-4" />
                 <span>Find Tutors</span>
+              </Link>
+              <Link 
+                to="/bookings" 
+                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/bookings') ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:text-indigo-600'
+                }`}
+              >
+                <Calendar className="h-4 w-4" />
+                <span>My Bookings</span>
               </Link>
               <Link 
                 to="/dashboard" 

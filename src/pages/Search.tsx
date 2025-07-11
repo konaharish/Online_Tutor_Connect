@@ -2,16 +2,24 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import SearchFilters from '../components/SearchFilters';
 import TeacherCard from '../components/TeacherCard';
+import TutorProfile from '../components/TutorProfile';
+import BookingForm from '../components/BookingForm';
 import { SearchFilters as SearchFiltersType, Teacher } from '../types';
 import { getAIRecommendations } from '../utils/aiRecommendations';
 import { useTutors } from '../hooks/useTutors';
+import { useBookings } from '../hooks/useBookings';
 import { Brain, Filter, Loader } from 'lucide-react';
 
 const Search = () => {
   const [filters, setFilters] = useState<SearchFiltersType>({});
   const [searchTriggered, setSearchTriggered] = useState(false);
   const [showAIRecommendations, setShowAIRecommendations] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  
   const { tutors, loading, error } = useTutors();
+  const { createBooking, loading: bookingLoading } = useBookings();
 
   // Show tutors when the page loads
   useEffect(() => {
@@ -122,12 +130,39 @@ const Search = () => {
 
   const handleViewProfile = (teacher: Teacher) => {
     console.log('View profile for:', teacher.name);
-    // TODO: Implement profile modal or navigation
+    setSelectedTeacher(teacher);
+    setShowProfile(true);
   };
 
   const handleBookSession = (teacher: Teacher) => {
     console.log('Book session with:', teacher.name);
-    // TODO: Implement booking modal or navigation
+    setSelectedTeacher(teacher);
+    setShowBookingForm(true);
+  };
+
+  const handleBookingSubmit = async (bookingData: any) => {
+    if (!selectedTeacher) return;
+
+    const result = await createBooking(bookingData);
+    if (result.data) {
+      setShowBookingForm(false);
+      setSelectedTeacher(null);
+    }
+  };
+
+  const handleCloseProfile = () => {
+    setShowProfile(false);
+    setSelectedTeacher(null);
+  };
+
+  const handleCloseBookingForm = () => {
+    setShowBookingForm(false);
+    setSelectedTeacher(null);
+  };
+
+  const handleBookFromProfile = () => {
+    setShowProfile(false);
+    setShowBookingForm(true);
   };
 
   const displayTeachers = showAIRecommendations ? aiRecommendations.map(rec => rec.teacher) : filteredTeachers;
@@ -231,6 +266,36 @@ const Search = () => {
           </div>
         )}
       </div>
+
+      {/* Tutor Profile Modal */}
+      {showProfile && selectedTeacher && (
+        <TutorProfile
+          teacher={selectedTeacher}
+          onClose={handleCloseProfile}
+          onBookSession={handleBookFromProfile}
+        />
+      )}
+
+      {/* Booking Form Modal */}
+      {showBookingForm && selectedTeacher && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          {bookingLoading ? (
+            <div className="bg-white p-8 rounded-lg">
+              <div className="flex items-center space-x-4">
+                <Loader className="w-6 h-6 animate-spin" />
+                <span>Creating booking...</span>
+              </div>
+            </div>
+          ) : (
+            <BookingForm
+              teacher={selectedTeacher}
+              onBookingSubmit={handleBookingSubmit}
+              onCancel={handleCloseBookingForm}
+              currentUserGrade={filters.grade}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 };

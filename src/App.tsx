@@ -10,6 +10,7 @@ import Search from "./pages/Search";
 import Dashboard from "./pages/Dashboard";
 import BecomeTutor from "./pages/BecomeTutor";
 import Auth from "./pages/Auth";
+import Bookings from "./pages/Bookings";
 import NotFound from "./pages/NotFound";
 import { AuthGuard } from "./components/AuthGuard";
 
@@ -31,6 +32,14 @@ const App = () => (
               element={
                 <AuthGuard>
                   <Dashboard />
+                </AuthGuard>
+              } 
+            />
+            <Route 
+              path="/bookings" 
+              element={
+                <AuthGuard>
+                  <Bookings />
                 </AuthGuard>
               } 
             />
