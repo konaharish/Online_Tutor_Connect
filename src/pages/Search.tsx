@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SearchFilters from '../components/SearchFilters';
 import TeacherCard from '../components/TeacherCard';
 import TutorProfile from '../components/TutorProfile';
@@ -20,6 +21,7 @@ const Search = () => {
   
   const { tutors, loading, error } = useTutors();
   const { createBooking, loading: bookingLoading } = useBookings();
+  const navigate = useNavigate();
 
   // Show tutors when the page loads
   useEffect(() => {
@@ -170,6 +172,17 @@ const Search = () => {
 
   console.log('Final display teachers:', displayTeachers.length);
 
+  // Check if filters are applied and no teachers found
+  const hasFiltersApplied = filters.subjects || filters.subject || filters.location || filters.maxBudget || 
+                          filters.teachingMode || filters.rating || filters.grade;
+  
+  // Navigate to teacher not found page if search was triggered with filters but no results
+  useEffect(() => {
+    if (searchTriggered && !loading && hasFiltersApplied && displayTeachers.length === 0) {
+      navigate('/teacher-not-found');
+    }
+  }, [searchTriggered, loading, hasFiltersApplied, displayTeachers.length, navigate]);
+
   if (error) {
     return (
       <div className="min-h-screen py-8">
@@ -209,7 +222,7 @@ const Search = () => {
                     `${displayTeachers.length} Tutors Found`
                   )}
                 </h2>
-                {!loading && (
+                {!loading && displayTeachers.length > 0 && (
                   <button
                     onClick={() => setShowAIRecommendations(!showAIRecommendations)}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -253,14 +266,6 @@ const Search = () => {
                     grade={filters.grade}
                   />
                 ))}
-              </div>
-            )}
-
-            {!loading && displayTeachers.length === 0 && (
-              <div className="text-center py-12">
-                <Filter className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No tutors found</h3>
-                <p className="text-gray-600">Try adjusting your search filters to find more tutors.</p>
               </div>
             )}
           </div>

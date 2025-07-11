@@ -9,8 +9,10 @@ import Index from "./pages/Index";
 import Search from "./pages/Search";
 import Dashboard from "./pages/Dashboard";
 import BecomeTutor from "./pages/BecomeTutor";
+import BecomeStudent from "./pages/BecomeStudent";
 import Auth from "./pages/Auth";
 import Bookings from "./pages/Bookings";
+import TeacherNotFound from "./pages/TeacherNotFound";
 import NotFound from "./pages/NotFound";
 import { AuthGuard } from "./components/AuthGuard";
 
@@ -27,6 +29,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/search" element={<Search />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/teacher-not-found" element={<TeacherNotFound />} />
             <Route 
               path="/dashboard" 
               element={
@@ -48,6 +51,14 @@ const App = () => (
               element={
                 <AuthGuard>
                   <BecomeTutor />
+                </AuthGuard>
+              } 
+            />
+            <Route 
+              path="/become-student" 
+              element={
+                <AuthGuard>
+                  <BecomeStudent />
                 </AuthGuard>
               } 
             />
