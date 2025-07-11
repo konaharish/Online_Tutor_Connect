@@ -119,7 +119,15 @@ export const useBookings = () => {
       }
 
       console.log('Bookings loaded:', data);
-      setBookings(data || []);
+      
+      // Type cast the data to match our BookingSession interface
+      const typedBookings: BookingSession[] = (data || []).map(booking => ({
+        ...booking,
+        teaching_mode: booking.teaching_mode as 'home-tuition' | 'center-based' | 'online',
+        status: booking.status as 'pending' | 'confirmed' | 'completed' | 'cancelled'
+      }));
+      
+      setBookings(typedBookings);
     } catch (error: any) {
       console.error('Unexpected error loading bookings:', error);
       const errorMessage = error.message || 'Failed to load bookings';
