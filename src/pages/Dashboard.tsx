@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, BookOpen, Star, Calendar, MapPin, Phone, Edit } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from '@/hooks/useProfile';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -234,12 +236,12 @@ const Dashboard = () => {
                   <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No bookings yet</h3>
                   <p className="text-gray-600 mb-4">Start your learning journey by booking a session with a tutor.</p>
-                  <a
-                    href="/search"
-                    className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                  <button
+                    onClick={() => navigate('/search')}
+                    className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
                   >
                     Find Tutors
-                  </a>
+                  </button>
                 </div>
               </div>
             )}
@@ -264,12 +266,12 @@ const Dashboard = () => {
                   <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No favorites yet</h3>
                   <p className="text-gray-600 mb-4">Save your favorite tutors here for quick access.</p>
-                  <a
-                    href="/search"
-                    className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                  <button
+                    onClick={() => navigate('/search')}
+                    className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
                   >
                     Discover Tutors
-                  </a>
+                  </button>
                 </div>
               </div>
             )}
