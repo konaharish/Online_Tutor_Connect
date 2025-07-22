@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Calendar, Clock, MapPin, User, Phone, Mail, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { useBookings, BookingSession } from '../hooks/useBookings';
 
 const Bookings = () => {
   const { bookings, loading, updateBookingStatus } = useBookings();
+  const navigate = useNavigate();
 
   const getStatusColor = (status: BookingSession['status']) => {
     switch (status) {
@@ -58,7 +60,7 @@ const Bookings = () => {
             <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No bookings yet</h3>
             <p className="text-gray-600 mb-4">Start by booking a session with one of our tutors.</p>
-            <Button onClick={() => window.location.href = '/search'}>
+            <Button onClick={() => navigate('/search')}>
               Find Tutors
             </Button>
           </div>
